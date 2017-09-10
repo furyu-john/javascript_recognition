@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--suppress UnterminatedStatementJS -->
+<html lang="jp">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h2>音声コントロール</h2>
+    <div id="app">
+        <div>
+            <p v-if="canNotUse">SpeechAPI使えないんだってよ</p>
+            <p v-else>SpeechAPI使えるんだってよ</p>
+            <button @click="start">start</button>
+            <button @click="stop">stop</button>
+            <div v-if="nowRecording">
+                <p>レコーディング中</p>
+                <ul>
+                    <li v-for="result in nowRecordingMessages">メッセージ：{{result.message}}, 信頼度?：{{result.confidence}}</li>
+                </ul>
+            </div>
+            <div>
+                <h4>結果</h4>
+                <ul>
+                    <li v-for="(result, index) in results">
+                        <p>{{index + 1}}回目</p>
+                        <ul>
+                            <li v-for="r in result">メッセージ：{{r.message}}, 信頼度?：{{r.confidence}}</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.2/vue.min.js"></script>
+<script src="./record.js"></script>
+<script>
+
+    new Vue({
+      el: '#app',
+      data: {
+        canNotUse: Record.canNotUse,
+        record: null
+      },
+      computed: {
+        results: function() {
+          return this.record ? this.record.messages : [];
+        },
+        nowRecording: function() {
+          return this.record ? this.record.alreadyStart : false;
+        },
+        nowRecordingMessages: function() {
+          return this.record ? this.record.nowRecordedMessages : [];
+        }
+      },
+      created: function() {
+        if (this.canNotUse) {
+          return ;
+        }
+        this.record = new Record({
+          infinity: true,
+          maxAlternatives: 6
+        });
+      },
+      methods: {
+        start: function() {
+          if (!this.canNotUse && !this.record.alreadyStart) {
+            this.record.start()
+          }
+        },
+        stop: function() {
+          if (!this.canNotUse && !this.record.alreadyStop) {
+            this.record.stop()
+          }
+        }
+      }
+
+    });
+</script>
+</html>
